@@ -1,17 +1,13 @@
 package commands
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
-	"task-tracker/internal/config"
-	"task-tracker/internal/models"
-	"task-tracker/internal/utils"
+	"task-tracker/internal/repository"
 )
 
-func Delete(args []string) (string, error) {
+func Delete(args []string, repo repository.Repository) (string, error) {
 	if len(args) == 0 {
 		return "", errors.New("missing task ID")
 	}
@@ -21,31 +17,7 @@ func Delete(args []string) (string, error) {
 		return "", errors.New("invalid ID")
 	}
 
-	f, err := os.ReadFile(config.Filename)
-	if err != nil {
-		return "", err
-	}
-
-	var tasks []*models.Task
-	if err := json.Unmarshal(f, &tasks); err != nil {
-		return "", err
-	}
-
-	var taskIndex int
-	var task *models.Task
-	for i, t := range tasks {
-		if t.Id == taskID {
-			taskIndex = i
-			task = t
-		}
-	}
-
-	if task == nil {
-		return "", errors.New("task not found")
-	}
-
-	tasks = append(tasks[:taskIndex], tasks[taskIndex+1:]...)
-	if err := utils.WriteJSON(tasks); err != nil {
+	if err := repo.DeleteTask(taskID); err != nil {
 		return "", err
 	}
 

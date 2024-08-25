@@ -1,31 +1,23 @@
 package commands
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
-	"slices"
-	"task-tracker/internal/config"
 	"task-tracker/internal/models"
+	"task-tracker/internal/repository"
 )
 
-var availableStatus = []string{"todo", "in-progress", "done"}
-
-func List(args []string) (string, error) {
-	f, err := os.ReadFile(config.Filename)
+func List(args []string, repo repository.Repository) (string, error) {
+	tasks, err := repo.GetAllTasks()
 	if err != nil {
 		return "", err
 	}
 
-	var tasks []models.Task
-	if err := json.Unmarshal(f, &tasks); err != nil {
-		return "", err
-	}
+	if len(args) > 0 {
+		status := args[0]
+		filteredTasks := []*models.Task{}
 
-	if len(args) > 0 && slices.Contains(availableStatus, args[0]) {
-		filteredTasks := []models.Task{}
 		for _, task := range tasks {
-			if task.Status == args[0] {
+			if task.Status == status {
 				filteredTasks = append(filteredTasks, task)
 			}
 		}

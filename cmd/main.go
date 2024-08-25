@@ -5,17 +5,21 @@ import (
 	"os"
 	"task-tracker/internal/commands"
 	"task-tracker/internal/config"
+	"task-tracker/internal/repository"
 	"task-tracker/internal/utils"
 )
 
-type Command = func(p []string) (string, error)
+type Command = func(args []string, r repository.Repository) (string, error)
 
 type Cmd struct {
-	commands map[string]Command
+	commands   map[string]Command
+	repository repository.Repository
 }
 
 func New() Cmd {
-	cmd := Cmd{}
+	cmd := Cmd{
+		repository: repository.NewJSONRepository(),
+	}
 
 	cmd.Init()
 	cmd.Add("add", commands.AddTask)
@@ -45,12 +49,11 @@ func (c *Cmd) Execute() (string, error) {
 		return "", err
 	}
 
-	params := args[1:]
-	return command(params)
+	return command(args[1:], c.repository)
 }
 
 func (c *Cmd) Init() {
-	c.commands = make(map[string]func(p []string) (string, error))
+	c.commands = make(map[string]Command)
 }
 
 func (c *Cmd) Add(name string, command Command) {

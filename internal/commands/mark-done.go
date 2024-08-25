@@ -1,17 +1,13 @@
 package commands
 
 import (
-	"encoding/json"
 	"errors"
-	"os"
+	"fmt"
 	"strconv"
-	"task-tracker/internal/config"
-	"task-tracker/internal/models"
-	"task-tracker/internal/utils"
-	"time"
+	"task-tracker/internal/repository"
 )
 
-func MarkDone(args []string) (string, error) {
+func MarkDone(args []string, repo repository.Repository) (string, error) {
 	if len(args) == 0 {
 		return "", errors.New("missing task ID")
 	}
@@ -21,33 +17,9 @@ func MarkDone(args []string) (string, error) {
 		return "", errors.New("invalid ID")
 	}
 
-	f, err := os.ReadFile(config.Filename)
-	if err != nil {
+	if err := repo.UpdateTask(taskID, "", "done"); err != nil {
 		return "", err
 	}
 
-	var tasks []*models.Task
-	if err := json.Unmarshal(f, &tasks); err != nil {
-		return "", err
-	}
-
-	var task *models.Task
-	for _, t := range tasks {
-		if t.Id == taskID {
-			task = t
-		}
-	}
-
-	if task == nil {
-		return "", errors.New("task not found")
-	}
-
-	task.Status = "done"
-	task.UpdatedAt = time.Now().String()
-
-	if err := utils.WriteJSON(tasks); err != nil {
-		return "", err
-	}
-
-	return "", nil
+	return fmt.Sprintf("Task updated successfully (ID: %d)\n", taskID), nil
 }
