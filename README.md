@@ -1,6 +1,7 @@
 # Task Tracker
 
-Track your tasks via terminal
+Track your tasks via terminal. 
+This is my solution for the [first challenge](https://roadmap.sh/projects/task-tracker) of the backend developer roadmap!
 
 ## How to use?
 
